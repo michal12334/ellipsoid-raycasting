@@ -94,11 +94,9 @@ fn built_ui() -> impl Widget<AppState> {
             Flex::column()
                 .with_flex_child(
                     Flex::row()
-                        .with_flex_child(
+                        .with_child(
                             Label::new("a:")
                                 .align_vertical(UnitPoint::TOP_LEFT)
-                                .expand_width(),
-                            1.0
                         )
                         .with_flex_child(
                             TextBox::new()
@@ -106,16 +104,14 @@ fn built_ui() -> impl Widget<AppState> {
                                 .lens(AppState::a)
                                 .align_vertical(UnitPoint::TOP)
                                 .expand_width(),
-                            5.0
+                            1.0
                         )
-                        .with_flex_child(
+                        .with_child(
                             Stepper::new()
                                 .with_range(0.1, 10.0)
                                 .with_step(0.1)
                                 .lens(AppState::a)
                                 .align_vertical(UnitPoint::TOP_RIGHT)
-                                .expand_width(),
-                            1.0
                         )
                         .expand_width(),
                     1.0
