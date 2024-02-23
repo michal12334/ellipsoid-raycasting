@@ -5,7 +5,7 @@ use druid::{AppLauncher, Color, LocalizedString, PlatformError, Rect, Widget, Wi
 use druid::piet::{ImageBuf, ImageFormat};
 use druid::platform_menus::mac::file::default;
 use im::Vector;
-use nalgebra::{DMatrix, Matrix, Matrix4, OMatrix, SquareMatrix, Vector4};
+use nalgebra::{DMatrix, Matrix, Matrix4, OMatrix, SquareMatrix, Vector3, Vector4};
 use crate::pixel::Pixel;
 
 #[derive(Clone, Data)]
@@ -16,12 +16,13 @@ struct AppState {
     a: f32,
     b: f32,
     c: f32,
+    m: u32,
 }
 
 impl AppState {
     fn new(width: usize, height: usize) -> Self {
         let canvas = Vector::from((0..height).map(|_| Vector::from(vec![Pixel::new(); width])).collect::<Vec<Vector<Pixel>>>());
-        AppState { canvas, width, height, a: 1.0, b: 1.0, c: 1.0, }
+        AppState { canvas, width, height, a: 1.0, b: 1.0, c: 1.0, m: 1, }
     }
 
     fn change_pixel_color(&mut self, x: usize, y: usize, color: Color) {
@@ -86,7 +87,17 @@ fn main() -> Result<(), PlatformError> {
 
             let l = initial_state.a * x * x + initial_state.b * y * y;
             if l < 1.0 {
-                initial_state.change_pixel_color(i, j, Color::YELLOW);
+                let z = (1.0 - l).sqrt() / initial_state.c;
+
+                let n = Vector3::new(2.0 * initial_state.a * x, 2.0 * initial_state.b * y, 2.0 * initial_state.c * z).normalize();
+                let v = Vector3::new(-x, -y, 2.0 - z).normalize();
+
+                let intensity = n.dot(&v).powi(initial_state.m as i32) as f64;
+
+                let yellow = Color::YELLOW.as_rgba();
+                let color = Color::rgb(yellow.0 * intensity, yellow.1 * intensity, yellow.2 * intensity);
+
+                initial_state.change_pixel_color(i, j, color);
             }
         }
     }
