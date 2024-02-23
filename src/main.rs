@@ -72,7 +72,18 @@ fn main() -> Result<(), PlatformError> {
         .title(LocalizedString::new("Raycasting"))
         .window_size((width as f64, height as f64));
 
-    let initial_state = AppState::new(width, height);
+    let mut initial_state = AppState::new(width, height);
+
+    for i in 0..width {
+        for j in 0..height {
+            let x = (i as i32 - (width as i32 / 2)) as f32 / ((width / 2) as f32);
+            let y = (j as i32 - (height as i32 / 2)) as f32 / ((height / 2) as f32) * (-1.0);
+
+            if x*x + y*y < 0.25 {
+                initial_state.change_pixel_color(i, j, Color::YELLOW);
+            }
+        }
+    }
 
     AppLauncher::with_window(main_window)
         .log_to_console()
