@@ -3,7 +3,9 @@ mod pixel;
 use druid::widget::prelude::*;
 use druid::{AppLauncher, Color, LocalizedString, PlatformError, Rect, Widget, WindowDesc};
 use druid::piet::{ImageBuf, ImageFormat};
+use druid::platform_menus::mac::file::default;
 use im::Vector;
+use nalgebra::{DMatrix, Matrix, Matrix4, OMatrix, SquareMatrix, Vector4};
 use crate::pixel::Pixel;
 
 #[derive(Clone, Data)]
@@ -11,12 +13,15 @@ struct AppState {
     canvas: Vector<Vector<Pixel>>,
     width: usize,
     height: usize,
+    a: f32,
+    b: f32,
+    c: f32,
 }
 
 impl AppState {
     fn new(width: usize, height: usize) -> Self {
         let canvas = Vector::from((0..height).map(|_| Vector::from(vec![Pixel::new(); width])).collect::<Vec<Vector<Pixel>>>());
-        AppState { canvas, width, height }
+        AppState { canvas, width, height, a: 1.0, b: 1.0, c: 1.0, }
     }
 
     fn change_pixel_color(&mut self, x: usize, y: usize, color: Color) {
@@ -79,7 +84,8 @@ fn main() -> Result<(), PlatformError> {
             let x = (i as i32 - (width as i32 / 2)) as f32 / ((width / 2) as f32);
             let y = (j as i32 - (height as i32 / 2)) as f32 / ((height / 2) as f32) * (-1.0);
 
-            if x*x + y*y < 0.25 {
+            let l = initial_state.a * x * x + initial_state.b * y * y;
+            if l < 1.0 {
                 initial_state.change_pixel_color(i, j, Color::YELLOW);
             }
         }
