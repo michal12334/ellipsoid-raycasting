@@ -93,7 +93,15 @@ impl Canvas {
 }
 
 impl Widget<AppState> for Canvas {
-    fn event(&mut self, ctx: &mut EventCtx, event: &Event, data: &mut AppState, _env: &Env) {}
+    fn event(&mut self, ctx: &mut EventCtx, event: &Event, data: &mut AppState, _env: &Env) {
+        match event {
+            Event::Wheel(m) => {
+                data.scale += m.wheel_delta.y / -1000.0;
+                println!("scale: {}", data.scale);
+            }
+            _ => {}
+        }
+    }
 
     fn lifecycle(&mut self, _ctx: &mut LifeCycleCtx, _event: &LifeCycle, _data: &AppState, _env: &Env) {}
 
