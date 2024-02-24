@@ -1,4 +1,3 @@
-mod pixel;
 mod canvas;
 
 use std::fmt::Formatter;
@@ -12,7 +11,6 @@ use druid::widget::{BackgroundBrush, Button, Container, Flex, Label, SizedBox, S
 use im::Vector;
 use nalgebra::{DMatrix, Matrix, Matrix4, OMatrix, SquareMatrix, Vector3, Vector4};
 use crate::canvas::Canvas;
-use crate::pixel::Pixel;
 
 #[derive(Clone, Data, Lens)]
 struct AppState {
