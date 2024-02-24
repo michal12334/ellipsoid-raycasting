@@ -96,13 +96,11 @@ fn built_ui() -> impl Widget<AppState> {
                     Flex::row()
                         .with_child(
                             Label::new("a:")
-                                .align_vertical(UnitPoint::TOP_LEFT)
                         )
                         .with_flex_child(
                             TextBox::new()
                                 .with_formatter(ParseFormatter::new())
                                 .lens(AppState::a)
-                                .align_vertical(UnitPoint::TOP)
                                 .expand_width(),
                             1.0
                         )
@@ -111,9 +109,9 @@ fn built_ui() -> impl Widget<AppState> {
                                 .with_range(0.1, 10.0)
                                 .with_step(0.1)
                                 .lens(AppState::a)
-                                .align_vertical(UnitPoint::TOP_RIGHT)
                         )
-                        .expand_width(),
+                        .expand_width()
+                        .align_vertical(UnitPoint::TOP),
                     1.0
                 )
                 .expand(),
