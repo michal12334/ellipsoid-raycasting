@@ -61,7 +61,7 @@ impl Widget<AppState> for CanvasWidget {
                     let z = (1.0 - l).sqrt() / c;
 
                     let n = Vector3::new(2.0 * a * x, 2.0 * b * y, 2.0 * c * z).normalize();
-                    let v = Vector3::new(-x, -y, 2.0 - z).normalize();
+                    let v = Vector3::new(-x, -y, 100.0 - z).normalize();
 
                     let intensity = n.dot(&v).powi(m) as f64;
 
