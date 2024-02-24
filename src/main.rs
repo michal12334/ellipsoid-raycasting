@@ -18,11 +18,12 @@ struct AppState {
     b: f64,
     c: f64,
     m: f64,
+    scale: f64,
 }
 
 impl AppState {
     fn new() -> Self {
-        AppState { a: 1.0, b: 1.0, c: 1.0, m: 1.0, }
+        AppState { a: 1.0, b: 1.0, c: 1.0, m: 1.0, scale: 1.0, }
     }
 }
 
