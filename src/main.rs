@@ -2,7 +2,7 @@ mod pixel;
 
 use std::fmt::Formatter;
 use druid::widget::prelude::*;
-use druid::{AppLauncher, Color, Lens, LocalizedString, PlatformError, Rect, UnitPoint, Widget, WidgetExt, WindowDesc};
+use druid::{AppLauncher, Color, Lens, lens, LocalizedString, PlatformError, Rect, UnitPoint, Widget, WidgetExt, WindowDesc};
 use druid::piet::{ImageBuf, ImageFormat};
 use druid::platform_menus::mac::file::default;
 use druid::text::ParseFormatter;
@@ -87,31 +87,13 @@ impl Widget<AppState> for CanvasWidget {
     }
 }
 
-fn built_ui() -> impl Widget<AppState> {
+fn build_ui() -> impl Widget<AppState> {
     Flex::row()
         .with_flex_child(CanvasWidget { }.expand(), 5.0)
         .with_flex_child(
             Flex::column()
                 .with_flex_child(
-                    Flex::row()
-                        .with_child(
-                            Label::new("a:")
-                        )
-                        .with_flex_child(
-                            TextBox::new()
-                                .with_formatter(ParseFormatter::new())
-                                .lens(AppState::a)
-                                .expand_width(),
-                            1.0
-                        )
-                        .with_child(
-                            Stepper::new()
-                                .with_range(0.1, 10.0)
-                                .with_step(0.1)
-                                .lens(AppState::a)
-                        )
-                        .expand_width()
-                        .align_vertical(UnitPoint::TOP),
+                    build_variable_menu("a:", AppState::a, AppState::a),
                     1.0
                 )
                 .expand(),
@@ -119,11 +101,33 @@ fn built_ui() -> impl Widget<AppState> {
         )
 }
 
+fn build_variable_menu(text: &str, lens_text_box: impl Lens<AppState, f64> + 'static, lens_stepper: impl Lens<AppState, f64> + 'static) -> impl Widget<AppState> {
+    Flex::row()
+        .with_child(
+            Label::new(text)
+        )
+        .with_flex_child(
+            TextBox::new()
+                .with_formatter(ParseFormatter::new())
+                .lens(lens_text_box)
+                .expand_width(),
+            1.0
+        )
+        .with_child(
+            Stepper::new()
+                .with_range(0.1, 10.0)
+                .with_step(0.1)
+                .lens(lens_stepper)
+        )
+        .expand_width()
+        .align_vertical(UnitPoint::TOP)
+}
+
 fn main() -> Result<(), PlatformError> {
     let width = 800usize;
     let height = 600usize;
 
-    let main_window = WindowDesc::new(built_ui())
+    let main_window = WindowDesc::new(build_ui())
         .title(LocalizedString::new("Raycasting"))
         .window_size((width as f64, height as f64));
 
