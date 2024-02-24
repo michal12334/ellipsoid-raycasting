@@ -14,14 +14,14 @@ use crate::pixel::Pixel;
 #[derive(Clone, Data, Lens)]
 struct AppState {
     a: f64,
-    b: f32,
-    c: f32,
-    m: u32,
+    b: f64,
+    c: f64,
+    m: f64,
 }
 
 impl AppState {
     fn new() -> Self {
-        AppState { a: 1.0, b: 1.0, c: 1.0, m: 1, }
+        AppState { a: 1.0, b: 1.0, c: 1.0, m: 1.0, }
     }
 }
 
@@ -54,6 +54,7 @@ impl Widget<AppState> for CanvasWidget {
                 let a = data.a as f32;
                 let b = data.b as f32;
                 let c = data.c as f32;
+                let m = data.m as i32;
 
                 let l = a * x * x + b * y * y;
                 if l < 1.0 {
@@ -62,7 +63,7 @@ impl Widget<AppState> for CanvasWidget {
                     let n = Vector3::new(2.0 * a * x, 2.0 * b * y, 2.0 * c * z).normalize();
                     let v = Vector3::new(-x, -y, 2.0 - z).normalize();
 
-                    let intensity = n.dot(&v).powi(data.m as i32) as f64;
+                    let intensity = n.dot(&v).powi(m) as f64;
 
                     let yellow = Color::YELLOW.as_rgba();
                     let color = Color::rgb(yellow.0 * intensity, yellow.1 * intensity, yellow.2 * intensity);
@@ -93,7 +94,19 @@ fn build_ui() -> impl Widget<AppState> {
         .with_flex_child(
             Flex::column()
                 .with_flex_child(
-                    build_variable_menu("a:", AppState::a, AppState::a),
+                    build_variable_menu("a:", AppState::a, AppState::a, (0.1, 10.0), 0.1),
+                    1.0
+                )
+                .with_flex_child(
+                    build_variable_menu("b:", AppState::b, AppState::b, (0.1, 10.0), 0.1),
+                    1.0
+                )
+                .with_flex_child(
+                    build_variable_menu("c:", AppState::c, AppState::c, (0.1, 10.0), 0.1),
+                    1.0
+                )
+                .with_flex_child(
+                    build_variable_menu("m:", AppState::m, AppState::m, (1.0, 100.0), 1.0),
                     1.0
                 )
                 .expand(),
@@ -101,7 +114,13 @@ fn build_ui() -> impl Widget<AppState> {
         )
 }
 
-fn build_variable_menu(text: &str, lens_text_box: impl Lens<AppState, f64> + 'static, lens_stepper: impl Lens<AppState, f64> + 'static) -> impl Widget<AppState> {
+fn build_variable_menu(
+    text: &str,
+    lens_text_box: impl Lens<AppState, f64> + 'static,
+    lens_stepper: impl Lens<AppState, f64> + 'static,
+    range: (f64, f64),
+    step: f64,
+) -> impl Widget<AppState> {
     Flex::row()
         .with_child(
             Label::new(text)
@@ -115,8 +134,8 @@ fn build_variable_menu(text: &str, lens_text_box: impl Lens<AppState, f64> + 'st
         )
         .with_child(
             Stepper::new()
-                .with_range(0.1, 10.0)
-                .with_step(0.1)
+                .with_range(range.0, range.1)
+                .with_step(step)
                 .lens(lens_stepper)
         )
         .expand_width()
