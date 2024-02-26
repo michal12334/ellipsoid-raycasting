@@ -10,6 +10,7 @@ pub struct Canvas {
     c: f64,
     m: f64,
     scale: f64,
+    rotation: (f64, f64, f64),
     width: usize,
     height: usize,
 }
@@ -22,14 +23,15 @@ impl Canvas {
             b: 1.0,
             c: 1.0,
             m: 1.0,
+            rotation: (0.0, 0.0, 0.0),
             scale: 1.0,
             width: 0,
             height: 0,
         }
     }
 
-    fn draw(&mut self, a: f64, b: f64, c: f64, m: f64, scale: f64, width: usize, height: usize) {
-        if !self.update(a, b, c, m, scale, width, height) {
+    fn draw(&mut self, a: f64, b: f64, c: f64, m: f64, scale: f64, rotation: (f64, f64, f64), width: usize, height: usize) {
+        if !self.update(a, b, c, m, scale, rotation, width, height) {
             return;
         }
 
@@ -69,14 +71,22 @@ impl Canvas {
         }
     }
 
-    fn update(&mut self, a: f64, b: f64, c: f64, m: f64, scale: f64, width: usize, height: usize) -> bool {
-        let result = self.a != a || self.b != b || self.c != c || self.m != m || self.scale != scale  || self.width != width || self.height != height;
+    fn update(&mut self, a: f64, b: f64, c: f64, m: f64, scale: f64, rotation: (f64, f64, f64), width: usize, height: usize) -> bool {
+        let result = self.a != a 
+            || self.b != b 
+            || self.c != c 
+            || self.m != m 
+            || self.scale != scale 
+            || self.rotation != rotation 
+            || self.width != width 
+            || self.height != height;
 
         self.a = a;
         self.b = b;
         self.c = c;
         self.m = m;
         self.scale = scale;
+        self.rotation = rotation;
         self.width = width;
         self.height = height;
 
@@ -85,10 +95,35 @@ impl Canvas {
     
     fn get_d(&self) -> Matrix4<f32> {
         let d = Matrix4::from_diagonal(&Vector4::new(self.a as f32, self.b as f32, self.c as f32, -1.0));
-        let m = Matrix4::<f32>::identity();
-        let m = m * Matrix4::from_diagonal(&Vector4::new(self.scale as f32, self.scale as f32, self.scale as f32, 1.0));
+        let m = self.get_rotation_matrix() 
+            * Matrix4::from_diagonal(&Vector4::new(self.scale as f32, self.scale as f32, self.scale as f32, 1.0));
         let mi = m.try_inverse().unwrap_or_else(|| Matrix4::identity());
         return mi.transpose() * d * mi;
+    }
+    
+    fn get_rotation_matrix(&self) -> Matrix4<f32> {
+        let x = self.rotation.0 as f32;
+        let y = self.rotation.1 as f32;
+        let z = self.rotation.2 as f32;
+        let rx = Matrix4::new(
+            1.0, 0.0, 0.0, 0.0,
+            0.0, x.cos(), -x.sin(), 0.0,
+            0.0, x.sin(), x.cos(), 0.0,
+            0.0, 0.0, 0.0, 1.0
+        );
+        let ry = Matrix4::new(
+            y.cos(), 0.0, y.sin(), 0.0,
+            0.0, 1.0, 0.0, 0.0,
+            -y.sin(), 0.0, y.cos(), 0.0,
+            0.0, 0.0, 0.0, 1.0
+        );
+        let rz = Matrix4::new(
+            z.cos(), -z.sin(), 0.0, 0.0,
+            z.sin(), z.cos(), 0.0, 0.0,
+            0.0, 0.0, 1.0, 0.0,
+            0.0, 0.0, 0.0, 1.0
+        );
+        return rx * ry * rz;
     }
 }
 
@@ -98,6 +133,24 @@ impl Widget<AppState> for Canvas {
             Event::Wheel(m) => {
                 data.scale += m.wheel_delta.y / -1000.0;
                 println!("scale: {}", data.scale);
+            }
+            Event::MouseDown(m) => {
+                if m.button == druid::MouseButton::Right {
+                    data.right_button_clicked = true;
+                    data.right_button_position = (m.pos.x, m.pos.y);
+                }
+            }
+            Event::MouseUp(m) => {
+                if m.button == druid::MouseButton::Right {
+                    data.right_button_clicked = false;
+                }
+            }
+            Event::MouseMove(m) => {
+                if m.buttons.contains(druid::MouseButton::Right) {
+                    data.rotation.0 += (data.right_button_position.1 - m.pos.y) / 10000.0;
+                    data.rotation.1 += (m.pos.x - data.right_button_position.0) / 10000.0;
+                    println!("rotation: {:?}", data.rotation);
+                }
             }
             _ => {}
         }
@@ -118,7 +171,7 @@ impl Widget<AppState> for Canvas {
         let width = rect.width() as usize;
         let height = rect.height() as usize;
 
-        self.draw(data.a, data.b, data.c, data.m, data.scale, width, height);
+        self.draw(data.a, data.b, data.c, data.m, data.scale, data.rotation, width, height);
 
         let image = ImageBuf
         ::from_raw(
