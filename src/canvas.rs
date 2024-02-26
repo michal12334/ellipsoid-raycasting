@@ -1,4 +1,4 @@
-use druid::{BoxConstraints, Color, Env, Event, EventCtx, ImageBuf, LayoutCtx, LifeCycle, LifeCycleCtx, PaintCtx, RenderContext, Size, UpdateCtx, Widget};
+use druid::{BoxConstraints, Color, Env, Event, EventCtx, ImageBuf, KbKey, LayoutCtx, LifeCycle, LifeCycleCtx, PaintCtx, RenderContext, Size, UpdateCtx, Widget};
 use druid::piet::ImageFormat;
 use nalgebra::{Matrix, Matrix4, OMatrix, U4, Vector3, Vector4};
 use crate::AppState;
@@ -130,9 +130,25 @@ impl Canvas {
 impl Widget<AppState> for Canvas {
     fn event(&mut self, ctx: &mut EventCtx, event: &Event, data: &mut AppState, _env: &Env) {
         match event {
+            Event::KeyDown(k) => {
+                if k.key == KbKey::Control {
+                    data.ctrl_clicked = true;
+                }
+            }
+            Event::KeyUp(k) => {
+                if k.key == KbKey::Control {
+                    data.ctrl_clicked = false;
+                }
+            }
             Event::Wheel(m) => {
-                data.scale += m.wheel_delta.y / -1000.0;
-                println!("scale: {}", data.scale);
+                ctx.request_focus();
+                if data.ctrl_clicked  {
+                    data.rotation.2 += m.wheel_delta.y / -1000.0;
+                    println!("rotation: {:?}", data.rotation);
+                } else {
+                    data.scale += m.wheel_delta.y / -1000.0;
+                    println!("scale: {}", data.scale);
+                }
             }
             Event::MouseDown(m) => {
                 if m.button == druid::MouseButton::Right {
@@ -156,7 +172,7 @@ impl Widget<AppState> for Canvas {
         }
     }
 
-    fn lifecycle(&mut self, _ctx: &mut LifeCycleCtx, _event: &LifeCycle, _data: &AppState, _env: &Env) {}
+    fn lifecycle(&mut self, _ctx: &mut LifeCycleCtx, _event: &LifeCycle, _data: &AppState, _env: &Env) { }
 
     fn update(&mut self, ctx: &mut UpdateCtx, _old_data: &AppState, _data: &AppState, _env: &Env) {
         ctx.request_paint();

@@ -22,6 +22,7 @@ struct AppState {
     rotation: (f64, f64, f64),
     right_button_clicked: bool,
     right_button_position: (f64, f64),
+    ctrl_clicked: bool,
 }
 
 impl AppState {
@@ -31,7 +32,8 @@ impl AppState {
             scale: 1.0,
             rotation: (0.0, 0.0, 0.0),
             right_button_clicked: false,
-            right_button_position: (0.0, 0.0)
+            right_button_position: (0.0, 0.0),
+            ctrl_clicked: false,
         }
     }
 }
