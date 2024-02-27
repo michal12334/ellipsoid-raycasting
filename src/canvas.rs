@@ -53,11 +53,31 @@ impl Canvas {
                 let y = (j as i32 - (height as i32 / 2)) as f32 / ((height / 2) as f32) * (-1.0);
                 let index = (j * width + i) * 4;
 
-                let l = -(dp + ap * x * x + bp * y * y);
-                if l >= 0.0 {
-                    let z = l.sqrt() / cp;
+                let a = d.m33;
+                let b = d.m31*x + d.m32*y + d.m34;
+                let b2 = b * b;
+                
+                let delta =
+                    b2
+                    - 4.0
+                    * (
+                        d.m11*x*x + d.m12*x*y + d.m14*x
+                        + d.m21*x*y + d.m22*y*y + d.m24*y
+                        + d.m41*x + d.m42*y + d.m44
+                    )
+                    * a;
+                
+                
+                if delta >= 0.0 {
+                    let z = (-b + delta.sqrt()) / (2.0 * a);
 
-                    let n = Vector3::new(2.0 * ap * x, 2.0 * bp * y, 2.0 * cp * z).normalize();
+                    let n = Vector3
+                        ::new(
+                            2.0*d.m11*x + d.m12*y + d.m13*z + d.m14 + d.m21*y + d.m31*z + d.m41,
+                            d.m12*x + d.m21*x + 2.0*d.m22*y + d.m23*z + d.m24 + d.m32*z + d.m42,
+                            d.m13*x + d.m23*y + d.m31*x + d.m32*y + 2.0*d.m33*z + d.m34 + d.m43
+                        )
+                        .normalize();
                     let v = Vector3::new(-x, -y, 100.0 - z).normalize();
 
                     let intensity = (n.dot(&v).powi(m) as f64 + 0.1).clamp(0.0, 1.0);
