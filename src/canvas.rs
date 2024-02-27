@@ -184,7 +184,7 @@ impl Widget<AppState> for Canvas {
                     data.rotation.2 += m.wheel_delta.y / -1000.0;
                     println!("rotation: {:?}", data.rotation);
                 } else if data.shift_clicked {
-                    data.position.2 += m.wheel_delta.y / -1000.0;
+                    data.position.2 += m.wheel_delta.x / -1000.0;
                     println!("position: {:?}", data.position);
                 } else {
                     data.scale += m.wheel_delta.y / -1000.0;
@@ -218,8 +218,8 @@ impl Widget<AppState> for Canvas {
                     println!("rotation: {:?}", data.rotation);
                 }
                 if m.buttons.contains(MouseButton::Left) {
-                    data.position.0 += (m.pos.x - data.left_button_position.0) / 10000.0;
-                    data.position.1 += (data.left_button_position.1 - m.pos.y) / 10000.0;
+                    data.position.0 += (m.pos.x - data.left_button_position.0) / self.width as f64 / 50.0;
+                    data.position.1 += (data.left_button_position.1 - m.pos.y) / self.height as f64 / 50.0;
                     println!("position: {:?}", data.position);
                 }
             }
