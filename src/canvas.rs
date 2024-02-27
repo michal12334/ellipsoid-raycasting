@@ -54,7 +54,7 @@ impl Canvas {
                 let index = (j * width + i) * 4;
 
                 let a = d.m33;
-                let b = d.m31*x + d.m32*y + d.m34;
+                let b = d.m13*x + d.m23*y + d.m31*x + d.m32*y + d.m34;
                 let b2 = b * b;
                 
                 let delta =
@@ -69,7 +69,10 @@ impl Canvas {
                 
                 
                 if delta >= 0.0 {
-                    let z = (-b + delta.sqrt()) / (2.0 * a);
+                    let z = if a > 0.0  
+                        { (-b + delta.sqrt()) / (2.0 * a) } 
+                        else 
+                        { (-b - delta.sqrt()) / (2.0 * a) };
 
                     let n = Vector3
                         ::new(
