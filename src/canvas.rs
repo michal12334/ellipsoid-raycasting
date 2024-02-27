@@ -1,4 +1,4 @@
-use druid::{BoxConstraints, Color, Env, Event, EventCtx, ImageBuf, KbKey, LayoutCtx, LifeCycle, LifeCycleCtx, PaintCtx, RenderContext, Size, UpdateCtx, Widget};
+use druid::{BoxConstraints, Color, Env, Event, EventCtx, ImageBuf, KbKey, LayoutCtx, LifeCycle, LifeCycleCtx, MouseButton, PaintCtx, RenderContext, Size, UpdateCtx, Widget};
 use druid::piet::ImageFormat;
 use nalgebra::{Matrix, Matrix4, OMatrix, U4, Vector3, Vector4};
 use crate::AppState;
@@ -11,6 +11,7 @@ pub struct Canvas {
     m: f64,
     scale: f64,
     rotation: (f64, f64, f64),
+    position: (f64, f64, f64),
     width: usize,
     height: usize,
 }
@@ -24,14 +25,15 @@ impl Canvas {
             c: 1.0,
             m: 1.0,
             rotation: (0.0, 0.0, 0.0),
+            position: (0.0, 0.0, 0.0),
             scale: 1.0,
             width: 0,
             height: 0,
         }
     }
 
-    fn draw(&mut self, a: f64, b: f64, c: f64, m: f64, scale: f64, rotation: (f64, f64, f64), width: usize, height: usize) {
-        if !self.update(a, b, c, m, scale, rotation, width, height) {
+    fn draw(&mut self, a: f64, b: f64, c: f64, m: f64, scale: f64, rotation: (f64, f64, f64), position: (f64, f64, f64), width: usize, height: usize) {
+        if !self.update(a, b, c, m, scale, rotation, position, width, height) {
             return;
         }
 
@@ -71,13 +73,14 @@ impl Canvas {
         }
     }
 
-    fn update(&mut self, a: f64, b: f64, c: f64, m: f64, scale: f64, rotation: (f64, f64, f64), width: usize, height: usize) -> bool {
+    fn update(&mut self, a: f64, b: f64, c: f64, m: f64, scale: f64, rotation: (f64, f64, f64), position: (f64, f64, f64), width: usize, height: usize) -> bool {
         let result = self.a != a 
             || self.b != b 
             || self.c != c 
             || self.m != m 
             || self.scale != scale 
             || self.rotation != rotation 
+            || self.position != position
             || self.width != width 
             || self.height != height;
 
@@ -87,6 +90,7 @@ impl Canvas {
         self.m = m;
         self.scale = scale;
         self.rotation = rotation;
+        self.position = position;
         self.width = width;
         self.height = height;
 
@@ -95,7 +99,8 @@ impl Canvas {
     
     fn get_d(&self) -> Matrix4<f32> {
         let d = Matrix4::from_diagonal(&Vector4::new(self.a as f32, self.b as f32, self.c as f32, -1.0));
-        let m = self.get_rotation_matrix() 
+        let m = self.get_position_matrix() 
+            * self.get_rotation_matrix() 
             * Matrix4::from_diagonal(&Vector4::new(self.scale as f32, self.scale as f32, self.scale as f32, 1.0));
         let mi = m.try_inverse().unwrap_or_else(|| Matrix4::identity());
         return mi.transpose() * d * mi;
@@ -125,19 +130,32 @@ impl Canvas {
         );
         return rx * ry * rz;
     }
+    
+    fn get_position_matrix(&self) -> Matrix4<f32> {
+        Matrix4::new(
+            1.0, 0.0, 0.0, self.position.0 as f32,
+            0.0, 1.0, 0.0, self.position.1 as f32,
+            0.0, 0.0, 1.0, self.position.2 as f32,
+            0.0, 0.0, 0.0, 1.0
+        )
+    }
 }
 
 impl Widget<AppState> for Canvas {
     fn event(&mut self, ctx: &mut EventCtx, event: &Event, data: &mut AppState, _env: &Env) {
         match event {
             Event::KeyDown(k) => {
-                if k.key == KbKey::Control {
-                    data.ctrl_clicked = true;
+                match k.key {
+                    KbKey::Control => data.ctrl_clicked = true,
+                    KbKey::Shift => data.shift_clicked = true,
+                    _ => {},
                 }
             }
             Event::KeyUp(k) => {
-                if k.key == KbKey::Control {
-                    data.ctrl_clicked = false;
+                match k.key {
+                    KbKey::Control => data.ctrl_clicked = false,
+                    KbKey::Shift => data.shift_clicked = false,
+                    _ => {},
                 }
             }
             Event::Wheel(m) => {
@@ -145,27 +163,44 @@ impl Widget<AppState> for Canvas {
                 if data.ctrl_clicked  {
                     data.rotation.2 += m.wheel_delta.y / -1000.0;
                     println!("rotation: {:?}", data.rotation);
+                } else if data.shift_clicked {
+                    data.position.2 += m.wheel_delta.y / -1000.0;
+                    println!("position: {:?}", data.position);
                 } else {
                     data.scale += m.wheel_delta.y / -1000.0;
                     println!("scale: {}", data.scale);
                 }
             }
             Event::MouseDown(m) => {
-                if m.button == druid::MouseButton::Right {
-                    data.right_button_clicked = true;
-                    data.right_button_position = (m.pos.x, m.pos.y);
+                match m.button {
+                    MouseButton::Right => {
+                        data.right_button_clicked = true;
+                        data.right_button_position = (m.pos.x, m.pos.y);
+                    }
+                    MouseButton::Left => {
+                        data.left_button_clicked = true;
+                        data.left_button_position = (m.pos.x, m.pos.y);
+                    }
+                    _ => {},
                 }
             }
             Event::MouseUp(m) => {
-                if m.button == druid::MouseButton::Right {
-                    data.right_button_clicked = false;
+                match m.button {
+                    MouseButton::Right => data.right_button_clicked = false,
+                    MouseButton::Left => data.left_button_clicked = false,
+                    _ => {},
                 }
             }
             Event::MouseMove(m) => {
-                if m.buttons.contains(druid::MouseButton::Right) {
+                if m.buttons.contains(MouseButton::Right) {
                     data.rotation.0 += (data.right_button_position.1 - m.pos.y) / 10000.0;
                     data.rotation.1 += (m.pos.x - data.right_button_position.0) / 10000.0;
                     println!("rotation: {:?}", data.rotation);
+                }
+                if m.buttons.contains(MouseButton::Left) {
+                    data.position.0 += (m.pos.x - data.left_button_position.0) / 10000.0;
+                    data.position.1 += (data.left_button_position.1 - m.pos.y) / 10000.0;
+                    println!("position: {:?}", data.position);
                 }
             }
             _ => {}
@@ -187,7 +222,7 @@ impl Widget<AppState> for Canvas {
         let width = rect.width() as usize;
         let height = rect.height() as usize;
 
-        self.draw(data.a, data.b, data.c, data.m, data.scale, data.rotation, width, height);
+        self.draw(data.a, data.b, data.c, data.m, data.scale, data.rotation, data.position, width, height);
 
         let image = ImageBuf
         ::from_raw(
