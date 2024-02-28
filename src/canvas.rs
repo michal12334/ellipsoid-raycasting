@@ -1,8 +1,7 @@
-use std::os::unix::raw::mode_t;
 use std::time::Duration;
 use druid::{BoxConstraints, Color, Env, Event, EventCtx, ImageBuf, KbKey, LayoutCtx, LifeCycle, LifeCycleCtx, MouseButton, PaintCtx, RenderContext, Size, UpdateCtx, Widget};
 use druid::piet::ImageFormat;
-use nalgebra::{Matrix, Matrix4, OMatrix, U4, Vector3, Vector4};
+use nalgebra::{Matrix4, Vector3, Vector4};
 use crate::AppState;
 
 pub struct Canvas {
@@ -54,10 +53,6 @@ impl Canvas {
         let m = m as i32;
         
         let d = self.get_d();
-        let ap = d.column(0).iter().sum::<f32>();
-        let bp = d.column(1).iter().sum::<f32>();
-        let cp = d.column(2).iter().sum::<f32>();
-        let dp = d.column(3).iter().sum::<f32>();
 
         for i in 0..width {
             for j in 0..height {
@@ -262,7 +257,7 @@ impl Widget<AppState> for Canvas {
                 ctx.request_timer(Duration::from_secs_f64(self.timer_step));
                 ctx.request_focus();
             }
-            Event::Timer(t) => {
+            Event::Timer(_) => {
                 self.current_timer -= self.timer_step;
                 if self.current_timer <= 0.0 { 
                     self.reset_timer();

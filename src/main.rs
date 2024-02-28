@@ -1,16 +1,9 @@
 mod canvas;
 
-use std::fmt::Formatter;
-use std::vec;
 use druid::widget::prelude::*;
-use druid::{AppLauncher, Color, Lens, lens, LocalizedString, PlatformError, Rect, UnitPoint, Widget, widget, WidgetExt, WindowDesc};
-use druid::piet::{ImageBuf, ImageFormat};
-use druid::platform_menus::mac::file::default;
+use druid::{AppLauncher, Lens, LocalizedString, PlatformError, UnitPoint, Widget, WidgetExt, WindowDesc};
 use druid::text::ParseFormatter;
-use druid::widget::{BackgroundBrush, Button, Container, Flex, Label, LensWrap, SizedBox, Stepper, TextBox, ValueTextBox};
-use druid::widget::LabelText::Dynamic;
-use im::Vector;
-use nalgebra::{DMatrix, Matrix, Matrix4, OMatrix, SquareMatrix, Vector3, Vector4};
+use druid::widget::{Container, Flex, Label, LensWrap, Stepper, TextBox};
 use crate::canvas::Canvas;
 
 #[derive(Clone, Data, Lens)]
@@ -200,7 +193,7 @@ fn main() -> Result<(), PlatformError> {
         .title(LocalizedString::new("Raycasting"))
         .window_size((width as f64, height as f64));
 
-    let mut initial_state = AppState::new();
+    let initial_state = AppState::new();
 
     AppLauncher::with_window(main_window)
         .log_to_console()
