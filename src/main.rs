@@ -23,6 +23,7 @@ struct AppState {
     rotation: (f64, f64, f64),
     position: (f64, f64, f64),
     accuracy: usize,
+    min_accuracy: usize,
     right_button_clicked: bool,
     right_button_position: (f64, f64),
     ctrl_clicked: bool,
@@ -39,12 +40,19 @@ impl AppState {
             rotation: (0.0, 0.0, 0.0),
             position: (0.0, 0.0, 0.0),
             accuracy: 16,
+            min_accuracy: 32,
             right_button_clicked: false,
             right_button_position: (0.0, 0.0),
             ctrl_clicked: false,
             left_button_clicked: false,
             left_button_position: (0.0, 0.0),
             shift_clicked: false,
+        }
+    }
+    
+    fn increase_accuracy(&mut self) {
+        if self.accuracy > 1 {
+            self.accuracy /= 2;
         }
     }
 }

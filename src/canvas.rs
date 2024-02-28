@@ -1,4 +1,5 @@
 use std::os::unix::raw::mode_t;
+use std::time::Duration;
 use druid::{BoxConstraints, Color, Env, Event, EventCtx, ImageBuf, KbKey, LayoutCtx, LifeCycle, LifeCycleCtx, MouseButton, PaintCtx, RenderContext, Size, UpdateCtx, Widget};
 use druid::piet::ImageFormat;
 use nalgebra::{Matrix, Matrix4, OMatrix, U4, Vector3, Vector4};
@@ -16,6 +17,10 @@ pub struct Canvas {
     accuracy: usize,
     width: usize,
     height: usize,
+    
+    max_timer: f64,
+    current_timer: f64,
+    timer_step: f64,
 }
 
 impl Canvas {
@@ -32,6 +37,10 @@ impl Canvas {
             scale: 1.0,
             width: 0,
             height: 0,
+
+            max_timer: 0.5,
+            current_timer: 0.0,
+            timer_step: 0.25,
         }
     }
 
@@ -175,6 +184,10 @@ impl Canvas {
             0.0, 0.0, 0.0, 1.0
         )
     }
+    
+    fn reset_timer(&mut self) {
+        self.current_timer = self.max_timer;
+    }
 }
 
 impl Widget<AppState> for Canvas {
@@ -198,14 +211,14 @@ impl Widget<AppState> for Canvas {
                 ctx.request_focus();
                 if data.ctrl_clicked  {
                     data.rotation.2 += m.wheel_delta.y / -1000.0;
-                    println!("rotation: {:?}", data.rotation);
                 } else if data.shift_clicked {
                     data.position.2 += m.wheel_delta.x / -1000.0;
-                    println!("position: {:?}", data.position);
                 } else {
                     data.scale += m.wheel_delta.y / -1000.0;
-                    println!("scale: {}", data.scale);
                 }
+                
+                data.accuracy = data.min_accuracy;
+                self.reset_timer();
             }
             Event::MouseDown(m) => {
                 match m.button {
@@ -232,14 +245,30 @@ impl Widget<AppState> for Canvas {
                     data.rotation.0 += (data.right_button_position.1 - m.pos.y) / 100.0;
                     data.rotation.1 += (m.pos.x - data.right_button_position.0) / 100.0;
                     data.right_button_position = (m.pos.x, m.pos.y);
-                    println!("rotation: {:?}", data.rotation);
+                    
+                    data.accuracy = data.min_accuracy;
+                    self.reset_timer();
                 }
                 if m.buttons.contains(MouseButton::Left) {
                     data.position.0 += (m.pos.x - data.left_button_position.0) / self.width as f64 * 2.0;
                     data.position.1 += (data.left_button_position.1 - m.pos.y) / self.height as f64 * 2.0;
                     data.left_button_position = (m.pos.x, m.pos.y);
-                    println!("position: {:?}", data.position);
+                    
+                    data.accuracy = data.min_accuracy;
+                    self.reset_timer();
                 }
+            }
+            Event::WindowConnected => {
+                self.reset_timer();
+                ctx.request_timer(Duration::from_secs_f64(self.timer_step));
+            }
+            Event::Timer(t) => {
+                self.current_timer -= self.timer_step;
+                if self.current_timer <= 0.0 { 
+                    self.reset_timer();
+                    data.increase_accuracy();
+                } 
+                ctx.request_timer(Duration::from_secs_f64(self.timer_step));
             }
             _ => {}
         }
