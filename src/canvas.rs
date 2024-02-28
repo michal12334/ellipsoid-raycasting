@@ -1,3 +1,4 @@
+use std::os::unix::raw::mode_t;
 use druid::{BoxConstraints, Color, Env, Event, EventCtx, ImageBuf, KbKey, LayoutCtx, LifeCycle, LifeCycleCtx, MouseButton, PaintCtx, RenderContext, Size, UpdateCtx, Widget};
 use druid::piet::ImageFormat;
 use nalgebra::{Matrix, Matrix4, OMatrix, U4, Vector3, Vector4};
@@ -12,6 +13,7 @@ pub struct Canvas {
     scale: f64,
     rotation: (f64, f64, f64),
     position: (f64, f64, f64),
+    accuracy: usize,
     width: usize,
     height: usize,
 }
@@ -26,14 +28,15 @@ impl Canvas {
             m: 1.0,
             rotation: (0.0, 0.0, 0.0),
             position: (0.0, 0.0, 0.0),
+            accuracy: 1,
             scale: 1.0,
             width: 0,
             height: 0,
         }
     }
 
-    fn draw(&mut self, a: f64, b: f64, c: f64, m: f64, scale: f64, rotation: (f64, f64, f64), position: (f64, f64, f64), width: usize, height: usize) {
-        if !self.update(a, b, c, m, scale, rotation, position, width, height) {
+    fn draw(&mut self, a: f64, b: f64, c: f64, m: f64, scale: f64, rotation: (f64, f64, f64), position: (f64, f64, f64), accuracy: usize, width: usize, height: usize) {
+        if !self.update(a, b, c, m, scale, rotation, position, accuracy, width, height) {
             return;
         }
 
@@ -49,6 +52,14 @@ impl Canvas {
 
         for i in 0..width {
             for j in 0..height {
+                if i % self.accuracy != 0 || j % self.accuracy != 0 {
+                    let colored_index = (j / self.accuracy * self.accuracy * width + i / self.accuracy * self.accuracy) * 4;
+                    let index = (j * width + i) * 4;
+                    (self.canvas[index], self.canvas[index + 1], self.canvas[index + 2], self.canvas[index + 3]) = 
+                        (self.canvas[colored_index], self.canvas[colored_index + 1], self.canvas[colored_index + 2], self.canvas[colored_index + 3]);
+                    continue;
+                } 
+                
                 let x = (i as i32 - (width as i32 / 2)) as f32 / ((width / 2) as f32);
                 let y = (j as i32 - (height as i32 / 2)) as f32 / ((height / 2) as f32) * (-1.0);
                 let index = (j * width + i) * 4;
@@ -96,7 +107,7 @@ impl Canvas {
         }
     }
 
-    fn update(&mut self, a: f64, b: f64, c: f64, m: f64, scale: f64, rotation: (f64, f64, f64), position: (f64, f64, f64), width: usize, height: usize) -> bool {
+    fn update(&mut self, a: f64, b: f64, c: f64, m: f64, scale: f64, rotation: (f64, f64, f64), position: (f64, f64, f64), accuracy: usize, width: usize, height: usize) -> bool {
         let result = self.a != a 
             || self.b != b 
             || self.c != c 
@@ -104,6 +115,7 @@ impl Canvas {
             || self.scale != scale 
             || self.rotation != rotation 
             || self.position != position
+            || self.accuracy != accuracy
             || self.width != width 
             || self.height != height;
 
@@ -114,6 +126,7 @@ impl Canvas {
         self.scale = scale;
         self.rotation = rotation;
         self.position = position;
+        self.accuracy = accuracy;
         self.width = width;
         self.height = height;
 
@@ -245,7 +258,7 @@ impl Widget<AppState> for Canvas {
         let width = rect.width() as usize;
         let height = rect.height() as usize;
 
-        self.draw(data.a, data.b, data.c, data.m, data.scale, data.rotation, data.position, width, height);
+        self.draw(data.a, data.b, data.c, data.m, data.scale, data.rotation, data.position, data.accuracy, width, height);
 
         let image = ImageBuf
         ::from_raw(
