@@ -3,11 +3,12 @@ mod canvas;
 use std::fmt::Formatter;
 use std::vec;
 use druid::widget::prelude::*;
-use druid::{AppLauncher, Color, Lens, lens, LocalizedString, PlatformError, Rect, UnitPoint, Widget, WidgetExt, WindowDesc};
+use druid::{AppLauncher, Color, Lens, lens, LocalizedString, PlatformError, Rect, UnitPoint, Widget, widget, WidgetExt, WindowDesc};
 use druid::piet::{ImageBuf, ImageFormat};
 use druid::platform_menus::mac::file::default;
 use druid::text::ParseFormatter;
-use druid::widget::{BackgroundBrush, Button, Container, Flex, Label, SizedBox, Stepper, TextBox, ValueTextBox};
+use druid::widget::{BackgroundBrush, Button, Container, Flex, Label, LensWrap, SizedBox, Stepper, TextBox, ValueTextBox};
+use druid::widget::LabelText::Dynamic;
 use im::Vector;
 use nalgebra::{DMatrix, Matrix, Matrix4, OMatrix, SquareMatrix, Vector3, Vector4};
 use crate::canvas::Canvas;
@@ -54,19 +55,83 @@ fn build_ui() -> impl Widget<AppState> {
         .with_flex_child(
             Flex::column()
                 .with_flex_child(
-                    build_variable_menu("a:", AppState::a, AppState::a, (0.1, 10.0), 0.1),
+                    Container::new(
+                        Flex::column()
+                            .with_flex_child(
+                                build_variable_menu("a:", AppState::a, AppState::a, (0.1, 10.0), 0.1),
+                                1.0
+                            )
+                            .with_flex_child(
+                                build_variable_menu("b:", AppState::b, AppState::b, (0.1, 10.0), 0.1),
+                                1.0
+                            )
+                            .with_flex_child(
+                                build_variable_menu("c:", AppState::c, AppState::c, (0.1, 10.0), 0.1),
+                                1.0
+                            )
+                            .with_flex_child(
+                                build_variable_menu("m:", AppState::m, AppState::m, (1.0, 100.0), 1.0),
+                                1.0
+                            )
+                    ).expand(),
                     1.0
                 )
                 .with_flex_child(
-                    build_variable_menu("b:", AppState::b, AppState::b, (0.1, 10.0), 0.1),
-                    1.0
-                )
-                .with_flex_child(
-                    build_variable_menu("c:", AppState::c, AppState::c, (0.1, 10.0), 0.1),
-                    1.0
-                )
-                .with_flex_child(
-                    build_variable_menu("m:", AppState::m, AppState::m, (1.0, 100.0), 1.0),
+                    Container::new(
+                        Flex::column()
+                            .with_flex_child(
+                                Container::new(
+                                    LensWrap::new(
+                                        Label::dynamic(|data: &f64, _| format!("Scale: {}", data)).expand_width(),
+                                        AppState::scale,
+                                    )
+                                ).expand(),
+                                1.0
+                            )
+                            .with_flex_child(
+                                Container::new(
+                                    LensWrap::new(
+                                        Flex::column()
+                                            .with_flex_child(
+                                                Label::dynamic(|data: &(f64, f64, f64), _| format!("RotationX: {}", data.0)).expand_width(),
+                                                1.0
+                                            )
+                                            .with_flex_child(
+                                                Label::dynamic(|data: &(f64, f64, f64), _| format!("RotationY: {}", data.1)).expand_width(),
+                                                1.0
+                                            )
+                                            .with_flex_child(
+                                                Label::dynamic(|data: &(f64, f64, f64), _| format!("RotationZ: {}", data.2)).expand_width(),
+                                                1.0
+                                            ),
+                                        AppState::rotation,
+                                    ),
+                                ).expand(),
+                                3.0
+                            )
+                            .with_flex_child(
+                                Container::new(
+                                    LensWrap::new(
+                                        Flex::column()
+                                            .with_flex_child(
+                                                Label::dynamic(|data: &(f64, f64, f64), _| format!("PositionX: {}", data.0)).expand_width(),
+                                                1.0
+                                            )
+                                            .with_flex_child(
+                                                Label::dynamic(|data: &(f64, f64, f64), _| format!("PositionY: {}", data.1)).expand_width(),
+                                                1.0
+                                            )
+                                            .with_flex_child(
+                                                Label::dynamic(|data: &(f64, f64, f64), _| format!("PositionZ: {}", data.2)).expand_width(),
+                                                1.0
+                                            ),
+                                        AppState::position,
+                                    ),
+                                ).expand(),
+                                3.0
+                            )
+                            .expand()
+                    ).expand_width(),
                     1.0
                 )
                 .expand(),
