@@ -208,7 +208,6 @@ impl Widget<AppState> for Canvas {
                 }
             }
             Event::Wheel(m) => {
-                ctx.request_focus();
                 if data.ctrl_clicked  {
                     data.rotation.2 += m.wheel_delta.y / -1000.0;
                 } else if data.shift_clicked {
@@ -261,6 +260,7 @@ impl Widget<AppState> for Canvas {
             Event::WindowConnected => {
                 self.reset_timer();
                 ctx.request_timer(Duration::from_secs_f64(self.timer_step));
+                ctx.request_focus();
             }
             Event::Timer(t) => {
                 self.current_timer -= self.timer_step;
