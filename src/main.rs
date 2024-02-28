@@ -80,11 +80,9 @@ fn build_ui() -> impl Widget<AppState> {
                     Container::new(
                         Flex::column()
                             .with_flex_child(
-                                Container::new(
-                                    LensWrap::new(
-                                        Label::dynamic(|data: &f64, _| format!("Scale: {}", data)).expand_width(),
-                                        AppState::scale,
-                                    )
+                                LensWrap::new(
+                                    Label::dynamic(|data: &f64, _| format!("Scale: {}", data)).expand_width(),
+                                    AppState::scale,
                                 ).expand(),
                                 1.0
                             )
