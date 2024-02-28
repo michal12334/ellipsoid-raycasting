@@ -229,13 +229,15 @@ impl Widget<AppState> for Canvas {
             }
             Event::MouseMove(m) => {
                 if m.buttons.contains(MouseButton::Right) {
-                    data.rotation.0 += (data.right_button_position.1 - m.pos.y) / 10000.0;
-                    data.rotation.1 += (m.pos.x - data.right_button_position.0) / 10000.0;
+                    data.rotation.0 += (data.right_button_position.1 - m.pos.y) / 100.0;
+                    data.rotation.1 += (m.pos.x - data.right_button_position.0) / 100.0;
+                    data.right_button_position = (m.pos.x, m.pos.y);
                     println!("rotation: {:?}", data.rotation);
                 }
                 if m.buttons.contains(MouseButton::Left) {
-                    data.position.0 += (m.pos.x - data.left_button_position.0) / self.width as f64 / 50.0;
-                    data.position.1 += (data.left_button_position.1 - m.pos.y) / self.height as f64 / 50.0;
+                    data.position.0 += (m.pos.x - data.left_button_position.0) / self.width as f64 * 2.0;
+                    data.position.1 += (data.left_button_position.1 - m.pos.y) / self.height as f64 * 2.0;
+                    data.left_button_position = (m.pos.x, m.pos.y);
                     println!("position: {:?}", data.position);
                 }
             }
