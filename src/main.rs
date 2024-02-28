@@ -136,6 +136,25 @@ fn build_ui() -> impl Widget<AppState> {
                                 ).expand(),
                                 3.0
                             )
+                            .with_flex_child(
+                                Flex::column()
+                                    .with_flex_child(
+                                        LensWrap::new(
+                                            Label::dynamic(|data: &usize, _| format!("Accuracy: {}", data)).expand_width(),
+                                            AppState::accuracy,
+                                        ).expand(),
+                                        1.0,
+                                    )
+                                    .with_flex_child(
+                                        LensWrap::new(
+                                            Label::dynamic(|data: &usize, _| format!("Min accuracy: {}", data)).expand_width(),
+                                            AppState::min_accuracy,
+                                        ).expand(),
+                                        1.0,
+                                    )
+                                    .expand(),
+                                2.0
+                            )
                             .expand()
                     ).expand_width(),
                     1.0
