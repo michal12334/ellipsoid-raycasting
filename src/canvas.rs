@@ -13,13 +13,16 @@ pub struct Canvas {
     scale: f64,
     rotation: (f64, f64, f64),
     position: (f64, f64, f64),
-    accuracy: usize,
     width: usize,
     height: usize,
     
     max_timer: f64,
     current_timer: f64,
     timer_step: f64,
+
+    previous_accuracy: usize,
+    accuracy: usize,
+    min_accuracy: usize,
 }
 
 impl Canvas {
@@ -32,7 +35,6 @@ impl Canvas {
             m: 1.0,
             rotation: (0.0, 0.0, 0.0),
             position: (0.0, 0.0, 0.0),
-            accuracy: 1,
             scale: 1.0,
             width: 0,
             height: 0,
@@ -40,11 +42,15 @@ impl Canvas {
             max_timer: 0.5,
             current_timer: 0.0,
             timer_step: 0.25,
+
+            previous_accuracy: 1,
+            accuracy: 1,
+            min_accuracy: 32,
         }
     }
 
-    fn draw(&mut self, a: f64, b: f64, c: f64, m: f64, scale: f64, rotation: (f64, f64, f64), position: (f64, f64, f64), accuracy: usize, width: usize, height: usize) {
-        if !self.update(a, b, c, m, scale, rotation, position, accuracy, width, height) {
+    fn draw(&mut self, a: f64, b: f64, c: f64, m: f64, scale: f64, rotation: (f64, f64, f64), position: (f64, f64, f64), width: usize, height: usize) {
+        if !self.update(a, b, c, m, scale, rotation, position, width, height) {
             return;
         }
 
@@ -111,7 +117,7 @@ impl Canvas {
         }
     }
 
-    fn update(&mut self, a: f64, b: f64, c: f64, m: f64, scale: f64, rotation: (f64, f64, f64), position: (f64, f64, f64), accuracy: usize, width: usize, height: usize) -> bool {
+    fn update(&mut self, a: f64, b: f64, c: f64, m: f64, scale: f64, rotation: (f64, f64, f64), position: (f64, f64, f64), width: usize, height: usize) -> bool {
         let result = self.a != a 
             || self.b != b 
             || self.c != c 
@@ -119,7 +125,6 @@ impl Canvas {
             || self.scale != scale 
             || self.rotation != rotation 
             || self.position != position
-            || self.accuracy != accuracy
             || self.width != width 
             || self.height != height;
 
@@ -130,11 +135,32 @@ impl Canvas {
         self.scale = scale;
         self.rotation = rotation;
         self.position = position;
-        self.accuracy = accuracy;
         self.width = width;
         self.height = height;
+        
+        if result { 
+            self.reset_accuracy();
+        } else { 
+            if self.previous_accuracy != self.accuracy { 
+                self.previous_accuracy = self.accuracy;
+                return true;
+            }
+        } 
 
         result
+    }
+    
+    fn increase_accuracy(&mut self) -> bool {
+        if self.accuracy > 1 {
+            self.accuracy /= 2;
+            return true;
+        } else { 
+            return false;
+        } 
+    }
+    
+    fn reset_accuracy(&mut self) {
+        self.accuracy = self.min_accuracy;
     }
     
     fn get_d(&self) -> Matrix4<f32> {
@@ -211,7 +237,7 @@ impl Widget<AppState> for Canvas {
                     data.scale += m.wheel_delta.y / -1000.0;
                 }
                 
-                data.accuracy = data.min_accuracy;
+                self.reset_accuracy();
                 self.reset_timer();
             }
             Event::MouseDown(m) => {
@@ -240,7 +266,7 @@ impl Widget<AppState> for Canvas {
                     data.rotation.1 += (m.pos.x - data.right_button_position.0) / 100.0;
                     data.right_button_position = (m.pos.x, m.pos.y);
                     
-                    data.accuracy = data.min_accuracy;
+                    self.reset_accuracy();
                     self.reset_timer();
                 }
                 if m.buttons.contains(MouseButton::Left) {
@@ -248,7 +274,7 @@ impl Widget<AppState> for Canvas {
                     data.position.1 += (data.left_button_position.1 - m.pos.y) / self.height as f64 * 2.0;
                     data.left_button_position = (m.pos.x, m.pos.y);
                     
-                    data.accuracy = data.min_accuracy;
+                    self.reset_accuracy();
                     self.reset_timer();
                 }
             }
@@ -261,12 +287,13 @@ impl Widget<AppState> for Canvas {
                 self.current_timer -= self.timer_step;
                 if self.current_timer <= 0.0 { 
                     self.reset_timer();
-                    data.increase_accuracy();
+                    self.increase_accuracy();
                 } 
                 ctx.request_timer(Duration::from_secs_f64(self.timer_step));
             }
             _ => {}
         }
+        data.accuracy = self.accuracy;
     }
 
     fn lifecycle(&mut self, _ctx: &mut LifeCycleCtx, _event: &LifeCycle, _data: &AppState, _env: &Env) { }
@@ -284,7 +311,7 @@ impl Widget<AppState> for Canvas {
         let width = rect.width() as usize;
         let height = rect.height() as usize;
 
-        self.draw(data.a, data.b, data.c, data.m, data.scale, data.rotation, data.position, data.accuracy, width, height);
+        self.draw(data.a, data.b, data.c, data.m, data.scale, data.rotation, data.position, width, height);
 
         let image = ImageBuf
         ::from_raw(

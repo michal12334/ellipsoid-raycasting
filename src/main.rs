@@ -32,7 +32,7 @@ impl AppState {
             scale: 1.0,
             rotation: (0.0, 0.0, 0.0),
             position: (0.0, 0.0, 0.0),
-            accuracy: 16,
+            accuracy: 1,
             min_accuracy: 32,
             right_button_clicked: false,
             right_button_position: (0.0, 0.0),
@@ -40,12 +40,6 @@ impl AppState {
             left_button_clicked: false,
             left_button_position: (0.0, 0.0),
             shift_clicked: false,
-        }
-    }
-    
-    fn increase_accuracy(&mut self) {
-        if self.accuracy > 1 {
-            self.accuracy /= 2;
         }
     }
 }
