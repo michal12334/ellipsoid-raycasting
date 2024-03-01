@@ -1,6 +1,7 @@
 use std::time::Duration;
 use druid::{BoxConstraints, Color, Env, Event, EventCtx, ImageBuf, KbKey, LayoutCtx, LifeCycle, LifeCycleCtx, MouseButton, PaintCtx, RenderContext, Size, UpdateCtx, Widget};
 use druid::piet::ImageFormat;
+use druid::TextAlignment::Start;
 use nalgebra::{Matrix4, Vector3, Vector4};
 use crate::AppState;
 
@@ -307,6 +308,8 @@ impl Widget<AppState> for Canvas {
     }
 
     fn paint(&mut self, ctx: &mut PaintCtx, data: &AppState, _env: &Env) {
+        let start = chrono::Local::now();
+        
         let rect = ctx.size().to_rect();
         let width = rect.width() as usize;
         let height = rect.height() as usize;
@@ -322,5 +325,9 @@ impl Widget<AppState> for Canvas {
         )
             .to_image(ctx.render_ctx);
         ctx.draw_image(&image, rect, druid::piet::InterpolationMode::Bilinear);
+
+        let end = chrono::Local::now();
+        let duration = end - start;
+        println!("FPS: {:?}", 1.0 / duration.num_milliseconds() as f64 * 1000.0);
     }
 }
