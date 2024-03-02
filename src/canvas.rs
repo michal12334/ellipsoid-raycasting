@@ -309,8 +309,8 @@ impl Widget<AppState> for Canvas {
         ctx.request_paint();
     }
 
-    fn layout(&mut self, _layout_ctx: &mut LayoutCtx, _bc: &BoxConstraints, _data: &AppState, _env: &Env) -> Size {
-        _bc.max()
+    fn layout(&mut self, _layout_ctx: &mut LayoutCtx, bc: &BoxConstraints, _data: &AppState, _env: &Env) -> Size {
+        bc.max()
     }
 
     fn paint(&mut self, ctx: &mut PaintCtx, data: &AppState, _env: &Env) {
