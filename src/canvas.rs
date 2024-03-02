@@ -105,7 +105,7 @@ impl Canvas {
                         .normalize();
                     let v = Vector3::new(-x, -y, 100.0 - z).normalize();
 
-                    let intensity = (n.dot(&v).powi(m) as f64 + 0.1).clamp(0.0, 1.0);
+                    let intensity = (n.dot(&v).powi(m) as f64).clamp(0.0, 1.0);
 
                     let yellow = Color::YELLOW.as_rgba();
                     let color = Color::rgb(yellow.0 * intensity, yellow.1 * intensity, yellow.2 * intensity);
