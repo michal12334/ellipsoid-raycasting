@@ -6,6 +6,7 @@ use crate::AppState;
 
 pub struct Canvas {
     canvas: Vec<u8>,
+    pixels_computed: Vec<bool>,
     a: f64,
     b: f64,
     c: f64,
@@ -29,6 +30,7 @@ impl Canvas {
     pub fn new() -> Self {
         Canvas {
             canvas: Vec::new(),
+            pixels_computed: Vec::new(),
             a: 1.0,
             b: 1.0,
             c: 1.0,
@@ -51,10 +53,18 @@ impl Canvas {
 
     fn draw(&mut self, a: f64, b: f64, c: f64, m: f64, scale: f64, rotation: (f64, f64, f64), translation: (f64, f64, f64), width: usize, height: usize) {
         if !self.update(a, b, c, m, scale, rotation, translation, width, height) {
-            return;
-        }
+            if self.previous_accuracy != self.accuracy {
+                self.previous_accuracy = self.accuracy;
+            } else {
+                return;
+            }
+        } else { 
+            self.reset_accuracy();
+            self.pixels_computed.fill(false);
+        } 
 
         self.canvas.resize(width * height * 4, 0);
+        self.pixels_computed.resize(width * height, false);
         
         let m = m as i32;
         
@@ -62,6 +72,10 @@ impl Canvas {
 
         for i in 0..width {
             for j in 0..height {
+                let pixel_index = j * width + i;
+                if self.pixels_computed[pixel_index] {
+                    continue;
+                }
                 if i % self.accuracy != 0 || j % self.accuracy != 0 {
                     let colored_index = (j / self.accuracy * self.accuracy * width + i / self.accuracy * self.accuracy) * 4;
                     let index = (j * width + i) * 4;
@@ -110,8 +124,10 @@ impl Canvas {
                     let color = Color::rgb(yellow.0 * intensity, yellow.1 * intensity, yellow.2 * intensity);
 
                     (self.canvas[index], self.canvas[index + 1], self.canvas[index + 2], self.canvas[index + 3]) = color.as_rgba8();
+                    self.pixels_computed[pixel_index] = true;
                 } else {
                     (self.canvas[index], self.canvas[index + 1], self.canvas[index + 2], self.canvas[index + 3]) = (0, 0, 0, 255);
+                    self.pixels_computed[pixel_index] = true;
                 }
             }
         }
@@ -137,15 +153,6 @@ impl Canvas {
         self.translation = translation;
         self.width = width;
         self.height = height;
-        
-        if result { 
-            self.reset_accuracy();
-        } else { 
-            if self.previous_accuracy != self.accuracy { 
-                self.previous_accuracy = self.accuracy;
-                return true;
-            }
-        } 
 
         result
     }
