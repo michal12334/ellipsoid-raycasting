@@ -1,7 +1,6 @@
 use std::time::Duration;
 use druid::{BoxConstraints, Color, Env, Event, EventCtx, ImageBuf, KbKey, LayoutCtx, LifeCycle, LifeCycleCtx, MouseButton, PaintCtx, RenderContext, Size, UpdateCtx, Widget};
 use druid::piet::ImageFormat;
-use druid::TextAlignment::Start;
 use nalgebra::{Matrix4, Vector3, Vector4};
 use crate::AppState;
 
