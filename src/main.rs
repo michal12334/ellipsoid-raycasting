@@ -14,7 +14,7 @@ struct AppState {
     m: f64,
     scale: f64,
     rotation: (f64, f64, f64),
-    position: (f64, f64, f64),
+    translation: (f64, f64, f64),
     accuracy: usize,
     min_accuracy: usize,
     right_button_clicked: bool,
@@ -31,7 +31,7 @@ impl AppState {
             a: 1.0, b: 1.0, c: 1.0, m: 1.0,
             scale: 1.0,
             rotation: (0.0, 0.0, 0.0),
-            position: (0.0, 0.0, 0.0),
+            translation: (0.0, 0.0, 0.0),
             accuracy: 1,
             min_accuracy: 32,
             right_button_clicked: false,
@@ -107,18 +107,18 @@ fn build_ui() -> impl Widget<AppState> {
                                     LensWrap::new(
                                         Flex::column()
                                             .with_flex_child(
-                                                Label::dynamic(|data: &(f64, f64, f64), _| format!("PositionX: {}", data.0)).expand_width(),
+                                                Label::dynamic(|data: &(f64, f64, f64), _| format!("TranslationX: {}", data.0)).expand_width(),
                                                 1.0
                                             )
                                             .with_flex_child(
-                                                Label::dynamic(|data: &(f64, f64, f64), _| format!("PositionY: {}", data.1)).expand_width(),
+                                                Label::dynamic(|data: &(f64, f64, f64), _| format!("TranslationY: {}", data.1)).expand_width(),
                                                 1.0
                                             )
                                             .with_flex_child(
-                                                Label::dynamic(|data: &(f64, f64, f64), _| format!("PositionZ: {}", data.2)).expand_width(),
+                                                Label::dynamic(|data: &(f64, f64, f64), _| format!("TranslationZ: {}", data.2)).expand_width(),
                                                 1.0
                                             ),
-                                        AppState::position,
+                                        AppState::translation,
                                     ),
                                 ).expand(),
                                 3.0

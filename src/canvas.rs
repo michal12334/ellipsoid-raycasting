@@ -12,7 +12,7 @@ pub struct Canvas {
     m: f64,
     scale: f64,
     rotation: (f64, f64, f64),
-    position: (f64, f64, f64),
+    translation: (f64, f64, f64),
     width: usize,
     height: usize,
     
@@ -34,7 +34,7 @@ impl Canvas {
             c: 1.0,
             m: 1.0,
             rotation: (0.0, 0.0, 0.0),
-            position: (0.0, 0.0, 0.0),
+            translation: (0.0, 0.0, 0.0),
             scale: 1.0,
             width: 0,
             height: 0,
@@ -49,8 +49,8 @@ impl Canvas {
         }
     }
 
-    fn draw(&mut self, a: f64, b: f64, c: f64, m: f64, scale: f64, rotation: (f64, f64, f64), position: (f64, f64, f64), width: usize, height: usize) {
-        if !self.update(a, b, c, m, scale, rotation, position, width, height) {
+    fn draw(&mut self, a: f64, b: f64, c: f64, m: f64, scale: f64, rotation: (f64, f64, f64), translation: (f64, f64, f64), width: usize, height: usize) {
+        if !self.update(a, b, c, m, scale, rotation, translation, width, height) {
             return;
         }
 
@@ -117,14 +117,14 @@ impl Canvas {
         }
     }
 
-    fn update(&mut self, a: f64, b: f64, c: f64, m: f64, scale: f64, rotation: (f64, f64, f64), position: (f64, f64, f64), width: usize, height: usize) -> bool {
+    fn update(&mut self, a: f64, b: f64, c: f64, m: f64, scale: f64, rotation: (f64, f64, f64), translation: (f64, f64, f64), width: usize, height: usize) -> bool {
         let result = self.a != a 
             || self.b != b 
             || self.c != c 
             || self.m != m 
             || self.scale != scale 
             || self.rotation != rotation 
-            || self.position != position
+            || self.translation != translation
             || self.width != width 
             || self.height != height;
 
@@ -134,7 +134,7 @@ impl Canvas {
         self.m = m;
         self.scale = scale;
         self.rotation = rotation;
-        self.position = position;
+        self.translation = translation;
         self.width = width;
         self.height = height;
         
@@ -165,7 +165,7 @@ impl Canvas {
     
     fn get_d(&self) -> Matrix4<f32> {
         let d = Matrix4::from_diagonal(&Vector4::new(self.a as f32, self.b as f32, self.c as f32, -1.0));
-        let m = self.get_position_matrix() 
+        let m = self.get_translation_matrix() 
             * self.get_rotation_matrix() 
             * Matrix4::from_diagonal(&Vector4::new(self.scale as f32, self.scale as f32, self.scale as f32, 1.0));
         let mi = m.try_inverse().unwrap_or_else(|| Matrix4::identity());
@@ -197,11 +197,11 @@ impl Canvas {
         return rx * ry * rz;
     }
     
-    fn get_position_matrix(&self) -> Matrix4<f32> {
+    fn get_translation_matrix(&self) -> Matrix4<f32> {
         Matrix4::new(
-            1.0, 0.0, 0.0, self.position.0 as f32,
-            0.0, 1.0, 0.0, self.position.1 as f32,
-            0.0, 0.0, 1.0, self.position.2 as f32,
+            1.0, 0.0, 0.0, self.translation.0 as f32,
+            0.0, 1.0, 0.0, self.translation.1 as f32,
+            0.0, 0.0, 1.0, self.translation.2 as f32,
             0.0, 0.0, 0.0, 1.0
         )
     }
@@ -232,7 +232,7 @@ impl Widget<AppState> for Canvas {
                 if data.ctrl_clicked  {
                     data.rotation.2 += m.wheel_delta.y / -1000.0;
                 } else if data.shift_clicked {
-                    data.position.2 += m.wheel_delta.x / -1000.0;
+                    data.translation.2 += m.wheel_delta.x / -1000.0;
                 } else {
                     data.scale += m.wheel_delta.y / -1000.0;
                 }
@@ -270,8 +270,8 @@ impl Widget<AppState> for Canvas {
                     self.reset_timer();
                 }
                 if m.buttons.contains(MouseButton::Left) {
-                    data.position.0 += (m.pos.x - data.left_button_position.0) / self.width as f64 * 2.0;
-                    data.position.1 += (data.left_button_position.1 - m.pos.y) / self.height as f64 * 2.0;
+                    data.translation.0 += (m.pos.x - data.left_button_position.0) / self.width as f64 * 2.0;
+                    data.translation.1 += (data.left_button_position.1 - m.pos.y) / self.height as f64 * 2.0;
                     data.left_button_position = (m.pos.x, m.pos.y);
                     
                     self.reset_accuracy();
@@ -313,7 +313,7 @@ impl Widget<AppState> for Canvas {
         let width = rect.width() as usize;
         let height = rect.height() as usize;
 
-        self.draw(data.a, data.b, data.c, data.m, data.scale, data.rotation, data.position, width, height);
+        self.draw(data.a, data.b, data.c, data.m, data.scale, data.rotation, data.translation, width, height);
 
         let image = ImageBuf
         ::from_raw(
