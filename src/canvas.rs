@@ -323,12 +323,12 @@ impl Widget<AppState> for Canvas {
         self.draw(data.a, data.b, data.c, data.m, data.scale, data.rotation, data.translation, width, height);
 
         let image = ImageBuf
-        ::from_raw(
-            self.canvas.clone(),
-            ImageFormat::RgbaSeparate,
-            width,
-            height
-        )
+            ::from_raw(
+                self.canvas.clone(),
+                ImageFormat::RgbaSeparate,
+                width,
+                height
+            )
             .to_image(ctx.render_ctx);
         ctx.draw_image(&image, rect, druid::piet::InterpolationMode::Bilinear);
 
