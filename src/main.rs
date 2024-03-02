@@ -1,7 +1,7 @@
 mod canvas;
 
 use druid::widget::prelude::*;
-use druid::{AppLauncher, Lens, LocalizedString, PlatformError, UnitPoint, Widget, WidgetExt, WindowDesc};
+use druid::{AppLauncher, Lens, LocalizedString, UnitPoint, Widget, WidgetExt, WindowDesc};
 use druid::text::ParseFormatter;
 use druid::widget::{Container, Flex, Label, LensWrap, Stepper, TextBox};
 use crate::canvas::Canvas;
@@ -179,7 +179,7 @@ fn build_variable_menu(
         .align_vertical(UnitPoint::TOP)
 }
 
-fn main() -> Result<(), PlatformError> {
+fn main() {
     let width = 800usize;
     let height = 600usize;
 
@@ -191,7 +191,6 @@ fn main() -> Result<(), PlatformError> {
 
     AppLauncher::with_window(main_window)
         .log_to_console()
-        .launch(initial_state)?;
-
-    Ok(())
+        .launch(initial_state)
+        .expect("Failed to launch application");
 }
