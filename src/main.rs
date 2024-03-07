@@ -46,6 +46,27 @@ impl AppState {
             scroll_position: (0.0, 0.0),
         }
     }
+    
+    fn normalize_rotation(&mut self) {
+        while self.rotation.0 > std::f64::consts::PI {
+            self.rotation.0 -= 2.0 * std::f64::consts::PI;
+        }
+        while self.rotation.0 < -std::f64::consts::PI {
+            self.rotation.0 += 2.0 * std::f64::consts::PI;
+        }
+        while self.rotation.1 > std::f64::consts::PI {
+            self.rotation.1 -= 2.0 * std::f64::consts::PI;
+        }
+        while self.rotation.1 < -std::f64::consts::PI {
+            self.rotation.1 += 2.0 * std::f64::consts::PI;
+        }
+        while self.rotation.2 > std::f64::consts::PI {
+            self.rotation.2 -= 2.0 * std::f64::consts::PI;
+        }
+        while self.rotation.2 < -std::f64::consts::PI {
+            self.rotation.2 += 2.0 * std::f64::consts::PI;
+        }
+    }
 }
 
 fn build_ui() -> impl Widget<AppState> {

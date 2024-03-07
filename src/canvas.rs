@@ -238,6 +238,7 @@ impl Widget<AppState> for Canvas {
             Event::Wheel(m) => {
                 if data.ctrl_clicked  {
                     data.rotation.2 += m.wheel_delta.y / -1000.0;
+                    data.normalize_rotation();
                 } else if data.shift_clicked {
                     data.translation.2 += m.wheel_delta.x / -1000.0;
                 } else if data.scroll_clicked { 
@@ -282,6 +283,7 @@ impl Widget<AppState> for Canvas {
                     data.rotation.1 += (m.pos.x - data.right_button_position.0) / 100.0;
                     data.right_button_position = (m.pos.x, m.pos.y);
                     
+                    data.normalize_rotation();
                     self.reset_accuracy();
                     self.reset_timer();
                 }
