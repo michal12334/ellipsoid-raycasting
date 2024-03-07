@@ -23,6 +23,8 @@ struct AppState {
     left_button_clicked: bool,
     left_button_position: (f64, f64),
     shift_clicked: bool,
+    scroll_clicked: bool,
+    scroll_position: (f64, f64),
 }
 
 impl AppState {
@@ -40,6 +42,8 @@ impl AppState {
             left_button_clicked: false,
             left_button_position: (0.0, 0.0),
             shift_clicked: false,
+            scroll_clicked: false,
+            scroll_position: (0.0, 0.0),
         }
     }
 }

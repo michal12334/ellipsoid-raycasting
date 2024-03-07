@@ -240,6 +240,8 @@ impl Widget<AppState> for Canvas {
                     data.rotation.2 += m.wheel_delta.y / -1000.0;
                 } else if data.shift_clicked {
                     data.translation.2 += m.wheel_delta.x / -1000.0;
+                } else if data.scroll_clicked { 
+                    data.scale.2 += m.wheel_delta.y / -1000.0;
                 } else {
                     data.scale.0 += m.wheel_delta.y / -1000.0;
                     data.scale.1 += m.wheel_delta.y / -1000.0;
@@ -259,6 +261,10 @@ impl Widget<AppState> for Canvas {
                         data.left_button_clicked = true;
                         data.left_button_position = (m.pos.x, m.pos.y);
                     }
+                    MouseButton::Middle => {
+                        data.scroll_clicked = true;
+                        data.scroll_position = (m.pos.x, m.pos.y);
+                    }
                     _ => {},
                 }
             }
@@ -266,6 +272,7 @@ impl Widget<AppState> for Canvas {
                 match m.button {
                     MouseButton::Right => data.right_button_clicked = false,
                     MouseButton::Left => data.left_button_clicked = false,
+                    MouseButton::Middle => data.scroll_clicked = false,
                     _ => {},
                 }
             }
@@ -282,6 +289,14 @@ impl Widget<AppState> for Canvas {
                     data.translation.0 += (m.pos.x - data.left_button_position.0) / self.width as f64 * 2.0;
                     data.translation.1 += (data.left_button_position.1 - m.pos.y) / self.height as f64 * 2.0;
                     data.left_button_position = (m.pos.x, m.pos.y);
+                    
+                    self.reset_accuracy();
+                    self.reset_timer();
+                }
+                if m.buttons.contains(MouseButton::Middle) {
+                    data.scale.0 += (m.pos.x - data.scroll_position.0) / 1000.0;
+                    data.scale.1 += (data.scroll_position.1 - m.pos.y) / 1000.0;
+                    data.scroll_position = (m.pos.x, m.pos.y);
                     
                     self.reset_accuracy();
                     self.reset_timer();
