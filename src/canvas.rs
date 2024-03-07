@@ -11,7 +11,7 @@ pub struct Canvas {
     b: f64,
     c: f64,
     m: f64,
-    scale: f64,
+    scale: (f64, f64, f64),
     rotation: (f64, f64, f64),
     translation: (f64, f64, f64),
     width: usize,
@@ -37,7 +37,7 @@ impl Canvas {
             m: 1.0,
             rotation: (0.0, 0.0, 0.0),
             translation: (0.0, 0.0, 0.0),
-            scale: 1.0,
+            scale: (1.0, 1.0, 1.0),
             width: 0,
             height: 0,
 
@@ -51,7 +51,7 @@ impl Canvas {
         }
     }
 
-    fn draw(&mut self, a: f64, b: f64, c: f64, m: f64, scale: f64, rotation: (f64, f64, f64), translation: (f64, f64, f64), width: usize, height: usize) {
+    fn draw(&mut self, a: f64, b: f64, c: f64, m: f64, scale: (f64, f64, f64), rotation: (f64, f64, f64), translation: (f64, f64, f64), width: usize, height: usize) {
         if !self.update(a, b, c, m, scale, rotation, translation, width, height) {
             if self.previous_accuracy != self.accuracy {
                 self.previous_accuracy = self.accuracy;
@@ -133,7 +133,7 @@ impl Canvas {
         }
     }
 
-    fn update(&mut self, a: f64, b: f64, c: f64, m: f64, scale: f64, rotation: (f64, f64, f64), translation: (f64, f64, f64), width: usize, height: usize) -> bool {
+    fn update(&mut self, a: f64, b: f64, c: f64, m: f64, scale: (f64, f64, f64), rotation: (f64, f64, f64), translation: (f64, f64, f64), width: usize, height: usize) -> bool {
         let result = self.a != a 
             || self.b != b 
             || self.c != c 
@@ -174,7 +174,7 @@ impl Canvas {
         let d = Matrix4::from_diagonal(&Vector4::new((1.0 / self.a / self.a) as f32, (1.0 / self.b / self.b) as f32, (1.0 / self.c / self.c) as f32, -1.0));
         let m = self.get_translation_matrix() 
             * self.get_rotation_matrix() 
-            * Matrix4::from_diagonal(&Vector4::new(self.scale as f32, self.scale as f32, self.scale as f32, 1.0));
+            * Matrix4::from_diagonal(&Vector4::new(self.scale.0 as f32, self.scale.1 as f32, self.scale.2 as f32, 1.0));
         let mi = m.try_inverse().unwrap_or_else(|| Matrix4::identity());
         return mi.transpose() * d * mi;
     }
@@ -241,7 +241,9 @@ impl Widget<AppState> for Canvas {
                 } else if data.shift_clicked {
                     data.translation.2 += m.wheel_delta.x / -1000.0;
                 } else {
-                    data.scale += m.wheel_delta.y / -1000.0;
+                    data.scale.0 += m.wheel_delta.y / -1000.0;
+                    data.scale.1 += m.wheel_delta.y / -1000.0;
+                    data.scale.2 += m.wheel_delta.y / -1000.0;
                 }
                 
                 self.reset_accuracy();

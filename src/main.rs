@@ -12,7 +12,7 @@ struct AppState {
     b: f64,
     c: f64,
     m: f64,
-    scale: f64,
+    scale: (f64, f64, f64),
     rotation: (f64, f64, f64),
     translation: (f64, f64, f64),
     accuracy: usize,
@@ -29,7 +29,7 @@ impl AppState {
     fn new() -> Self {
         AppState { 
             a: 1.0, b: 1.0, c: 1.0, m: 1.0,
-            scale: 1.0,
+            scale: (1.0, 1.0, 1.0),
             rotation: (0.0, 0.0, 0.0),
             translation: (0.0, 0.0, 0.0),
             accuracy: 1,
@@ -75,11 +75,25 @@ fn build_ui() -> impl Widget<AppState> {
                     Container::new(
                         Flex::column()
                             .with_flex_child(
-                                LensWrap::new(
-                                    Label::dynamic(|data: &f64, _| format!("Scale: {}", data)).expand_width(),
-                                    AppState::scale,
+                                Container::new(
+                                    LensWrap::new(
+                                        Flex::column()
+                                            .with_flex_child(
+                                                Label::dynamic(|data: &(f64, f64, f64), _| format!("ScaleX: {}", data.0)).expand_width(),
+                                                1.0
+                                            )
+                                            .with_flex_child(
+                                                Label::dynamic(|data: &(f64, f64, f64), _| format!("ScaleY: {}", data.1)).expand_width(),
+                                                1.0
+                                            )
+                                            .with_flex_child(
+                                                Label::dynamic(|data: &(f64, f64, f64), _| format!("ScaleZ: {}", data.2)).expand_width(),
+                                                1.0
+                                            ),
+                                        AppState::scale,
+                                    ),
                                 ).expand(),
-                                1.0
+                                3.0
                             )
                             .with_flex_child(
                                 Container::new(
