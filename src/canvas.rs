@@ -41,9 +41,9 @@ impl Canvas {
             width: 0,
             height: 0,
 
-            max_timer: 0.5,
+            max_timer: 0.2,
             current_timer: 0.0,
-            timer_step: 0.25,
+            timer_step: 0.1,
 
             previous_accuracy: 1,
             accuracy: 1,
