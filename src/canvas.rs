@@ -171,7 +171,7 @@ impl Canvas {
     }
     
     fn get_d(&self) -> Matrix4<f32> {
-        let d = Matrix4::from_diagonal(&Vector4::new(self.a as f32, self.b as f32, self.c as f32, -1.0));
+        let d = Matrix4::from_diagonal(&Vector4::new((1.0 / self.a / self.a) as f32, (1.0 / self.b / self.b) as f32, (1.0 / self.c / self.c) as f32, -1.0));
         let m = self.get_translation_matrix() 
             * self.get_rotation_matrix() 
             * Matrix4::from_diagonal(&Vector4::new(self.scale as f32, self.scale as f32, self.scale as f32, 1.0));
